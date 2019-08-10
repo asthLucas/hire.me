@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class URLShortenerController {
 
 	@GetMapping("/create")
-	public Map<String, Object> shortenURL(@RequestParam("u") String urlToShorten)
+	public Map<String, Object> shortenURL(@RequestParam("url") String urlToShorten)
 	{
 		if(urlToShorten == null || urlToShorten.isBlank() || urlToShorten.isEmpty())
 		{
@@ -23,6 +23,7 @@ public class URLShortenerController {
 			
 			return json;
 		}
+				
 		return null;
 	}
 }

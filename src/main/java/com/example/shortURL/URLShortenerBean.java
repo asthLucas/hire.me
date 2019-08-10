@@ -1,9 +1,9 @@
 package com.example.shortURL;
 
-import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.List;
 
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
 import org.bouncycastle.jcajce.provider.digest.SHA3.DigestSHA3;
 import org.springframework.stereotype.Component;
@@ -15,20 +15,24 @@ public class URLShortenerBean {
 	public static String shorten(String url) throws NoSuchAlgorithmException
 	{
 		String hashedURL = hashURL(url);
-		
-		String shortURL = "http://".concat(hashedURL.substring(0, SHORT_URL_SIZE)).concat(".com");
+		String shortURL = "http://shortener/u/".concat(hashedURL.substring(0, SHORT_URL_SIZE));
 
 		return shortURL;
 	}
 	
-	protected static String parseRequestParameter(String url)
+	protected static List<String> parseRequestParameter(String url)
 	{
-		return URLEncodedUtils.parse(url, Charset.defaultCharset()).get(0).toString();
+		List<String> requestParameters = Arrays.asList(url.split("\\&"));
+
+		if(requestParameters.size() == 2)
+			requestParameters.set(1, requestParameters.get(1).replace("CUSTOM_ALIAS=", ""));
+		
+		return requestParameters;
 	}
 	
 	private static String hashURL(String url)
 	{
-		String urlToShorten = parseRequestParameter(url);
+		String urlToShorten = parseRequestParameter(url).get(0);
 
 		DigestSHA3 SHA3 = new SHA3.Digest512();
 		byte[] digest = SHA3.digest(urlToShorten.getBytes());
