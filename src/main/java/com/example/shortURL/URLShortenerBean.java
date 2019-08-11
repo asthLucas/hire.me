@@ -1,8 +1,6 @@
 package com.example.shortURL;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.bouncycastle.jcajce.provider.digest.SHA3;
@@ -19,44 +17,29 @@ public class URLShortenerBean {
 
 	public Map<String, Object> shorten(String originalURL, String alias) throws NoSuchAlgorithmException
 	{
+		Long begining = System.nanoTime();
 		URLEntity urlEntity = urlEntityRepository.findByAlias(alias);
+		urlEntity = validateAndPersistURL(urlEntity, originalURL, alias);
 		
+		if(urlEntity == null)
+			return ResponseUtils.aliasAlreadyInUseErrorJSON();
+		
+		return ResponseUtils.buildResponseBody(urlEntity, begining);
+	}
+		
+	private URLEntity validateAndPersistURL(URLEntity urlEntity, String originalURL, String alias)
+	{
 		if(urlEntity == null) {
 			urlEntity = new URLEntity(originalURL, alias);
 			urlEntityRepository.saveAndFlush(urlEntity);
 		} else if (isURLAliasAlreadyInUse(urlEntity, originalURL, alias)) {
-			return aliasAlreadyInUseErrorJSON();
+			return null;
 		} else {
 			urlEntity.incrementTimesRequested();
 			urlEntityRepository.saveAndFlush(urlEntity);
 		}
 		
-		Map<String, Object> json = new HashMap<String, Object>();
-		json.put("ALIAS", urlEntity.getAlias());
-		json.put("URL", "http://shortener/u/".concat(urlEntity.getAlias()));
-		json.put("TIMESTAMP", new Date());
-		
-		return json;
-	}
-	
-	public Map<String, Object> noURLSpecifiedErrorJSON()
-	{
-		Map<String, Object> json = new HashMap<String, Object>();
-		json.put("ERR_CODE", "000");
-		json.put("DESCRIPTION", "No input was specified, please inform the URL you wish to shorten.");
-		json.put("TIMESTAMP", new Date().toString());
-
-		return json;
-	}
-	
-	public Map<String, Object> aliasAlreadyInUseErrorJSON()
-	{
-		Map<String, Object> json = new HashMap<String, Object>();
-		json.put("ERR_CODE", "001");
-		json.put("DESCRIPTION", "Custom alias already in use for a different URL, please use a different one.");
-		json.put("TIMESTAMP", new Date().toString());
-
-		return json;
+		return urlEntity;
 	}
 	
 	private boolean isURLAliasAlreadyInUse(URLEntity entity, String url, String alias)

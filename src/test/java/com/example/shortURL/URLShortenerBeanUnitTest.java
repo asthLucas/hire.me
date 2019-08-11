@@ -1,5 +1,7 @@
 package com.example.shortURL;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.security.NoSuchAlgorithmException;
@@ -58,4 +60,24 @@ public class URLShortenerBeanUnitTest {
 		Map<String, Object> actual = urlShortenerBean.shorten("http://?&!@/\\|:;.com", "test");
 		assertTrue(expected.equals(actual.get("URL")));
 	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testShorten_whenGivenURL_thenResultShouldIncludeTimeTaken() throws NoSuchAlgorithmException
+	{
+		Map<String, Object> actual = urlShortenerBean.shorten("http://bemobi.com", null);
+		Map<String, Object> statistics = (Map<String, Object>) actual.get("STATISTICS");
+		
+		assertNotNull(statistics.get("TIME_TAKEN"));
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testShorten_whenURLRequestedOnce_thenResultShouldIncludeTimesURLWasRequested() throws NoSuchAlgorithmException
+	{
+		Map<String, Object> actual = urlShortenerBean.shorten("http://bemobi.com", null);
+		Map<String, Object> statistics = (Map<String, Object>) actual.get("STATISTICS");
+		
+		assertEquals(Long.valueOf(1), statistics.get("TIMES_REQUESTED"));
+	}	
 }

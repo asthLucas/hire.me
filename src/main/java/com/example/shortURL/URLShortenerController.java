@@ -18,10 +18,8 @@ public class URLShortenerController {
 	public Map<String, Object> shortenURL(@RequestParam("URL") String urlToShorten,
 										  @RequestParam(name = "CUSTOM_ALIAS", required = false) String customAlias ) throws NoSuchAlgorithmException
 	{
-		if(urlToShorten == null || urlToShorten.isBlank() || urlToShorten.isEmpty())
-		{
-			return urlShortenerBean.noURLSpecifiedErrorJSON();
-		}
+		if(urlToShorten == null ||  urlToShorten.isEmpty())
+			return ResponseUtils.noURLSpecifiedErrorJSON();
 		
 		return urlShortenerBean.shorten(urlToShorten, customAlias);
 	}

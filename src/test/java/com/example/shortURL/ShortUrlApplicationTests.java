@@ -2,7 +2,9 @@ package com.example.shortURL;
 
 import static org.junit.Assert.assertEquals;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -35,7 +37,7 @@ public class ShortUrlApplicationTests {
 					.andReturn();
 			
 			JSONObject json = new JSONObject(result.getResponse().getContentAsString());
-			assertEquals(json.get("ERR_CODE"), "000");
+			assertEquals(json.get("ERROR_CODE"), "000");
 			assertEquals(json.get("DESCRIPTION"), "No input was specified, please inform the URL you wish to shorten.");
 	}
 	
@@ -97,7 +99,7 @@ public class ShortUrlApplicationTests {
 				.andReturn();
 		
 		JSONObject json = new JSONObject(result.getResponse().getContentAsString());
-		assertEquals("001", json.get("ERR_CODE"));
+		assertEquals("001", json.get("ERROR_CODE"));
 		assertEquals("Custom alias already in use for a different URL, please use a different one.", json.get("DESCRIPTION"));
 	}
 }
