@@ -3,12 +3,15 @@ package com.example.shortURL;
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
 public class URLEntity {
 	
 	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long oid;
 	
 	private String originalURL;
