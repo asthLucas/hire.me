@@ -3,46 +3,59 @@ package com.example.shortURL;
 import static org.junit.Assert.assertTrue;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
+import java.util.Map;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.mockito.Mockito;
 
+@TestInstance(Lifecycle.PER_CLASS)
 public class URLShortenerBeanUnitTest {
+	
+	private URLShortenerBean urlShortenerBean = new URLShortenerBean();
 
-	@Test
-	public void testParseRequestParameters_whenRequestURLWithoutAlias_thenReturnsOneParameter()
+	@BeforeAll
+	public void setup()
 	{
-		List<String> urlParameter = URLShortenerBean.parseRequestParameter("http://test.com");
-		
-		assertTrue(urlParameter.get(0).equals("http://test.com"));
-	}
-
-	@Test
-	public void testParseRequestParameters_whenRequestURLWithAlias_thenReturnsTwoParameters()
-	{
-		List<String> urlParameter = URLShortenerBean.parseRequestParameter("http://test.com&CUSTOM_ALIAS=bemobi");
-		
-		assertTrue(urlParameter.get(0).equals("http://test.com"));
-		assertTrue(urlParameter.get(1).equals("bemobi"));
+		URLEntityRepository mockRepository = Mockito.mock(URLEntityRepository.class);
+		urlShortenerBean.setUrlEntityRepository(mockRepository);
 	}
 	
 	@Test
 	public void testShorten_whenGivenURLWithoutCustomAlias_thenReturnShortenedURL() throws NoSuchAlgorithmException
 	{
 		String expected = "http://shortener/u/1f7b69";
-		String actual   = URLShortenerBean.shorten("http://bemobi.com");
-		assertTrue(expected.equals(actual));
+		Map<String, Object> actual = urlShortenerBean.shorten("http://bemobi.com", null);
+		assertTrue(expected.equals(actual.get("URL")));
 		
 		expected = "http://shortener/u/10b301";
-		actual = URLShortenerBean.shorten("http://portal.ufrj.br");
-		assertTrue(expected.equals(actual));
+		actual = urlShortenerBean.shorten("http://portal.ufrj.br", null);
+		assertTrue(expected.equals(actual.get("URL")));
 		
 		expected = "http://shortener/u/17c2cc";
-		actual = URLShortenerBean.shorten("http://google.com");
-		assertTrue(expected.equals(actual));
+		actual = urlShortenerBean.shorten("http://google.com", null);
+		assertTrue(expected.equals(actual.get("URL")));
 		
 		expected = "http://shortener/u/1d34fc";
-		actual = URLShortenerBean.shorten("http://facebook.com");
-		assertTrue(expected.equals(actual));
+		actual = urlShortenerBean.shorten("http://facebook.com", null);
+		assertTrue(expected.equals(actual.get("URL")));
+	}
+
+	@Test
+	public void testShorten_whenGivenURLwithCustomAlias_thenReturnShortenedURLWithCustomAlias() throws NoSuchAlgorithmException
+	{
+		String expected = "http://shortener/u/bemobi";
+		Map<String, Object> actual = urlShortenerBean.shorten("http://bemobi.com", "bemobi");
+		assertTrue(expected.equals(actual.get("URL")));
+	}
+	
+	@Test
+	public void testShorten_whenGivenURLContainingSpecialCharacters_thenReturnShortenedURL() throws NoSuchAlgorithmException
+	{
+		String expected = "http://shortener/u/test";
+		Map<String, Object> actual = urlShortenerBean.shorten("http://?&!@/\\|:;.com", "test");
+		assertTrue(expected.equals(actual.get("URL")));
 	}
 }

@@ -1,41 +1,75 @@
 package com.example.shortURL;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.bouncycastle.jcajce.provider.digest.SHA3;
 import org.bouncycastle.jcajce.provider.digest.SHA3.DigestSHA3;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("urlShortenerBean")
 public class URLShortenerBean {
 	final static int SHORT_URL_SIZE = 6;
 	
-	public static String shorten(String url) throws NoSuchAlgorithmException
-	{
-		String hashedURL = hashURL(url);
-		String shortURL = "http://shortener/u/".concat(hashedURL.substring(0, SHORT_URL_SIZE));
+	@Autowired
+	private URLEntityRepository urlEntityRepository;
 
-		return shortURL;
+	public Map<String, Object> shorten(String originalURL, String alias) throws NoSuchAlgorithmException
+	{
+		URLEntity urlEntity = new URLEntity();
+		urlEntity.setOriginalURL(originalURL);
+
+		if(alias == null || alias.isEmpty())
+		{
+			String hashedURL = hashURL(originalURL);
+			urlEntity.setAlias(hashedURL);
+		} else {
+			urlEntity.setAlias(alias);
+		}
+
+		urlEntity.setTimesRequested(Long.valueOf(1));
+		urlEntity.setLastAccessTimestamp(new Date());
+		
+		URLEntity e = urlEntityRepository.findByAlias(alias);
+		
+		if(e == null) {
+			urlEntityRepository.saveAndFlush(urlEntity);
+		} else if (e.getAlias().equals(alias) && !e.getOriginalURL().equals(originalURL)) {
+			Map<String, Object> json = new HashMap<String, Object>();
+			json.put("ERR_CODE", "001");
+			json.put("DESCRIPTION", "Custom alias already in use for a different URL, please use a different one.");
+			json.put("TIMESTAMP", new Date().toString());
+			
+			return json;
+		} else {
+			e.setTimesRequested(e.getTimesRequested() + 1);
+			urlEntityRepository.saveAndFlush(e);
+		}
+		
+		Map<String, Object> json = new HashMap<String, Object>();
+		json.put("ALIAS", urlEntity.getAlias());
+		json.put("URL", "http://shortener/u/".concat(urlEntity.getAlias()));
+		
+		return json;
 	}
 	
-	protected static List<String> parseRequestParameter(String url)
+	public Map<String, Object> defaultShortenerErrorJSON()
 	{
-		List<String> requestParameters = Arrays.asList(url.split("\\&"));
+		Map<String, Object> json = new HashMap<String, Object>();
+		json.put("ERR_CODE", "000");
+		json.put("DESCRIPTION", "No input was specified, please inform the URL you wish to shorten.");
+		json.put("TIMESTAMP", new Date().toString());
 
-		if(requestParameters.size() == 2)
-			requestParameters.set(1, requestParameters.get(1).replace("CUSTOM_ALIAS=", ""));
-		
-		return requestParameters;
+		return json;
 	}
 	
 	private static String hashURL(String url)
 	{
-		String urlToShorten = parseRequestParameter(url).get(0);
-
 		DigestSHA3 SHA3 = new SHA3.Digest512();
-		byte[] digest = SHA3.digest(urlToShorten.getBytes());
+		byte[] digest = SHA3.digest(url.getBytes());
 		
 		StringBuilder bytes = new StringBuilder();
 		
@@ -43,6 +77,10 @@ public class URLShortenerBean {
 			bytes.append(Math.abs(digest[i]));
 		}
 		
-		return Long.toHexString(Long.parseUnsignedLong((bytes.toString().substring(0, 14))));
+		return Long.toHexString(Long.parseUnsignedLong((bytes.toString().substring(0, 14)))).substring(0, SHORT_URL_SIZE);
+	}
+	
+	public void setUrlEntityRepository(URLEntityRepository urlEntityRepository) {
+		this.urlEntityRepository = urlEntityRepository;
 	}
 }

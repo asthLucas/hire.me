@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 public interface URLEntityRepository extends JpaRepository<URLEntity, Long>{
 
 	public URLEntity findByOriginalURL(String originalURL);
+	public URLEntity findByAlias(String alias);
 }
