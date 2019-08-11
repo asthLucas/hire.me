@@ -19,6 +19,26 @@ public class URLEntity {
 	private Long timesRequested;
 	private Date lastAccessTimestamp;
 
+	public URLEntity(String url, String alias)
+	{		
+		if(alias == null || alias.isEmpty())
+		{
+			String hashedURL = URLShortenerBean.hashURL(url);
+			this.alias = hashedURL;
+		} else {
+			this.alias = alias;
+		}
+		
+		this.originalURL = url;
+		this.timesRequested = Long.valueOf(1);
+		this.lastAccessTimestamp = new Date();
+	}
+	
+	public void incrementTimesRequested()
+	{
+		this.timesRequested += 1;
+	}
+	
 	public Long getOid() {
 		return oid;
 	}

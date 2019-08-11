@@ -20,7 +20,7 @@ public class URLShortenerController {
 	{
 		if(urlToShorten == null || urlToShorten.isBlank() || urlToShorten.isEmpty())
 		{
-			return urlShortenerBean.defaultShortenerErrorJSON();
+			return urlShortenerBean.noURLSpecifiedErrorJSON();
 		}
 		
 		return urlShortenerBean.shorten(urlToShorten, customAlias);

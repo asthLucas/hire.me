@@ -63,7 +63,7 @@ public class ShortUrlApplicationTests {
 				.andReturn();
 
 		List<URLEntity> urlEntities = urlEntityRepository.findAll();
-
+		
 		assertEquals(1, urlEntities.size());
 		assertEquals("http://bemobi.com", urlEntities.get(0).getOriginalURL());
 		assertEquals("bemobi", urlEntities.get(0).getAlias());

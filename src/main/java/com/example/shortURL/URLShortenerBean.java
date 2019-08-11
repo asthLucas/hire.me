@@ -19,44 +19,27 @@ public class URLShortenerBean {
 
 	public Map<String, Object> shorten(String originalURL, String alias) throws NoSuchAlgorithmException
 	{
-		URLEntity urlEntity = new URLEntity();
-		urlEntity.setOriginalURL(originalURL);
-
-		if(alias == null || alias.isEmpty())
-		{
-			String hashedURL = hashURL(originalURL);
-			urlEntity.setAlias(hashedURL);
-		} else {
-			urlEntity.setAlias(alias);
-		}
-
-		urlEntity.setTimesRequested(Long.valueOf(1));
-		urlEntity.setLastAccessTimestamp(new Date());
+		URLEntity urlEntity = urlEntityRepository.findByAlias(alias);
 		
-		URLEntity e = urlEntityRepository.findByAlias(alias);
-		
-		if(e == null) {
+		if(urlEntity == null) {
+			urlEntity = new URLEntity(originalURL, alias);
 			urlEntityRepository.saveAndFlush(urlEntity);
-		} else if (e.getAlias().equals(alias) && !e.getOriginalURL().equals(originalURL)) {
-			Map<String, Object> json = new HashMap<String, Object>();
-			json.put("ERR_CODE", "001");
-			json.put("DESCRIPTION", "Custom alias already in use for a different URL, please use a different one.");
-			json.put("TIMESTAMP", new Date().toString());
-			
-			return json;
+		} else if (isURLAliasAlreadyInUse(urlEntity, originalURL, alias)) {
+			return aliasAlreadyInUseErrorJSON();
 		} else {
-			e.setTimesRequested(e.getTimesRequested() + 1);
-			urlEntityRepository.saveAndFlush(e);
+			urlEntity.incrementTimesRequested();
+			urlEntityRepository.saveAndFlush(urlEntity);
 		}
 		
 		Map<String, Object> json = new HashMap<String, Object>();
 		json.put("ALIAS", urlEntity.getAlias());
 		json.put("URL", "http://shortener/u/".concat(urlEntity.getAlias()));
+		json.put("TIMESTAMP", new Date());
 		
 		return json;
 	}
 	
-	public Map<String, Object> defaultShortenerErrorJSON()
+	public Map<String, Object> noURLSpecifiedErrorJSON()
 	{
 		Map<String, Object> json = new HashMap<String, Object>();
 		json.put("ERR_CODE", "000");
@@ -66,7 +49,25 @@ public class URLShortenerBean {
 		return json;
 	}
 	
-	private static String hashURL(String url)
+	public Map<String, Object> aliasAlreadyInUseErrorJSON()
+	{
+		Map<String, Object> json = new HashMap<String, Object>();
+		json.put("ERR_CODE", "001");
+		json.put("DESCRIPTION", "Custom alias already in use for a different URL, please use a different one.");
+		json.put("TIMESTAMP", new Date().toString());
+
+		return json;
+	}
+	
+	private boolean isURLAliasAlreadyInUse(URLEntity entity, String url, String alias)
+	{
+		boolean isAliasAlreadyInUse = entity.getAlias().equals(alias);
+		boolean isInUseForSameURL = entity.getOriginalURL().equals(url);
+
+		return isAliasAlreadyInUse && !isInUseForSameURL;
+	}
+	
+	static String hashURL(String url)
 	{
 		DigestSHA3 SHA3 = new SHA3.Digest512();
 		byte[] digest = SHA3.digest(url.getBytes());
