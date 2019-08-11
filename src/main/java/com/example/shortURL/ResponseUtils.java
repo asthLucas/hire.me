@@ -15,7 +15,7 @@ public class ResponseUtils {
 		json.put("TIMESTAMP", new Date());
 		
 		Map<String, Object> statistics = new HashMap<String, Object>();
-		statistics.put("TIME_TAKEN", TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - begining));
+		statistics.put("TIME_TAKEN", Long.toString(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - begining)).concat("ms"));
 		statistics.put("TIMES_REQUESTED", urlEntity.getTimesRequested());
 		json.put("STATISTICS", statistics);
 		

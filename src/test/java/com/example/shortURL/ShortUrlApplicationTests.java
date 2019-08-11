@@ -2,9 +2,7 @@ package com.example.shortURL;
 
 import static org.junit.Assert.assertEquals;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.Map;
 
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
