@@ -23,6 +23,9 @@ public class URLRetrieverBean {
 		if(urlEntity == null)			
 			return new ResponseEntity<Object>(ResponseUtils.noResultsFoundErrorJSON(), HttpStatus.NOT_FOUND);
 
+		urlEntity.incrementTimesRequested();
+		urlEntityRepository.saveAndFlush(urlEntity);
+		
 		URI uriToRedirect = new URI(urlEntity.getOriginalURL());
 		HttpHeaders headers = new HttpHeaders();
 		headers.setLocation(uriToRedirect);

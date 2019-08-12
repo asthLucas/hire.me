@@ -127,12 +127,14 @@ public class ShortUrlApplicationTests {
 	@Test
 	public void testRetrieveURL_whenUsingPreviouslyShortenedURL_thenShouldReturnOriginalURL() throws Exception
 	{
-		mockMvc.perform(MockMvcRequestBuilders
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
 				.get("/create?URL=http://bemobi.com"))
 				.andReturn();
 
-		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-				.get("/find?URI=http://bemobi.com"))
+		String alias = (String) new ObjectMapper().readValue(result.getResponse().getContentAsString(), HashMap.class).get("ALIAS");
+
+		result = mockMvc.perform(MockMvcRequestBuilders
+				.get("/u/".concat(alias)))
 				.andReturn();
 		
 		
@@ -149,7 +151,7 @@ public class ShortUrlApplicationTests {
 				.andReturn();
 
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-				.get("/find?URI=bemobi"))
+				.get("/u/bemobi"))
 				.andReturn();
 
 		final JSONObject json = new JSONObject(result.getResponse().getContentAsString());
@@ -158,13 +160,14 @@ public class ShortUrlApplicationTests {
 	}
 	
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testRetrieveURL_whenURLNotFound_thenShouldReturnError() throws Exception
 	{
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-				.get("/find?URI=http://bemobi.com"))
+				.get("/u/bemobi"))
 				.andReturn();
 
-		final JSONObject json = new JSONObject(result.getResponse().getContentAsString());
+		final HashMap<String, Object> json = new ObjectMapper().readValue(result.getResponse().getContentAsString(), HashMap.class);
 		assertEquals("003", json.get("ERROR_CODE"));
 		assertEquals("No URL found for the given identifier.", json.get("DESCRIPTION"));
 	}
@@ -174,7 +177,7 @@ public class ShortUrlApplicationTests {
 	public void testRetrieveURL_whenURLNotFound_thenShouldReturnErrorResponse() throws Exception
 	{
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-				.get("/find?URI=bemobi"))
+				.get("/u/bemobi"))
 				.andReturn();
 
 		Map<String, Object> json = new ObjectMapper().readValue(result.getResponse().getContentAsString(), HashMap.class);
@@ -190,7 +193,7 @@ public class ShortUrlApplicationTests {
 				.andReturn();
 
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-				.get("/find?URI=bemobi"))
+				.get("/u/bemobi"))
 				.andReturn();
 		
 		String headerLocation = result.getResponse().getHeader("Location");
