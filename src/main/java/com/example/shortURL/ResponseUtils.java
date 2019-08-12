@@ -52,4 +52,14 @@ public class ResponseUtils {
 		return json;
 	}
 
+	public static Map<String, Object> noResultsFoundErrorJSON()
+	{
+		Map<String, Object> json = new HashMap<String, Object>();
+		json.put("ERROR_CODE", "003");
+		json.put("DESCRIPTION", "No URL found for the given identifier.");
+		json.put("TIMESTAMP", new Date().toString());
+
+		return json;
+	}
+
 }

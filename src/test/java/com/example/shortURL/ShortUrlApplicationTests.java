@@ -1,9 +1,12 @@
 package com.example.shortURL;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -116,4 +119,49 @@ public class ShortUrlApplicationTests {
 		assertEquals("002", json.get("ERROR_CODE"));
 		assertEquals("This URL has been mapped already.", json.get("DESCRIPTION"));
 	}
+	
+	@Test
+	public void testRetrieveURL_whenUsingPreviouslyShortenedURL_thenShouldReturnOriginalURL() throws Exception
+	{
+		mockMvc.perform(MockMvcRequestBuilders
+				.get("/create?URL=http://bemobi.com"))
+				.andReturn();
+
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+				.get("/find?URI=http://bemobi.com"))
+				.andReturn();
+
+		final JSONObject json = new JSONObject(result.getResponse().getContentAsString());
+		assertThrows(JSONException.class, () -> json.get("ERROR_CODE"));
+		assertNotNull(json.get("ALIAS"));
+	}
+
+	@Test
+	public void testRetrieveURL_whenUsingAlias_thenShouldReturnOriginalURL() throws Exception
+	{
+		mockMvc.perform(MockMvcRequestBuilders
+				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
+				.andReturn();
+
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+				.get("/find?URI=bemobi"))
+				.andReturn();
+
+		final JSONObject json = new JSONObject(result.getResponse().getContentAsString());
+		assertThrows(JSONException.class, () -> json.get("ERROR_CODE"));
+		assertNotNull(json.get("ALIAS"));
+	}
+	
+	@Test
+	public void testRetrieveURL_whenURLNotFound_thenShouldReturnError() throws Exception
+	{
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+				.get("/find?URI=http://bemobi.com"))
+				.andReturn();
+
+		final JSONObject json = new JSONObject(result.getResponse().getContentAsString());
+		assertEquals("003", json.get("ERROR_CODE"));
+		assertEquals("No URL found for the given identifier.", json.get("DESCRIPTION"));
+	}
+
 }
