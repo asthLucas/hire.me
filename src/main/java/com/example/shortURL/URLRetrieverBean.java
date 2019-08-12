@@ -1,8 +1,12 @@
 package com.example.shortURL;
 
-import java.util.Map;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component("urlRetrieverBean")
@@ -11,15 +15,18 @@ public class URLRetrieverBean {
 	@Autowired
 	private URLEntityRepository urlEntityRepository;
 	
-	public Map<String, Object> retrieve(String uri)
+	public ResponseEntity<Object> retrieve(String uri) throws URISyntaxException
 	{
 		Long begining = System.nanoTime();
-
 		URLEntity urlEntity = urlEntityRepository.findByOriginalURLOrAlias(uri, uri);
-		
-		if(urlEntity == null)
-			return ResponseUtils.noResultsFoundErrorJSON();
-		
-		return ResponseUtils.buildResponseBody(urlEntity, begining);
+
+		if(urlEntity == null)			
+			return new ResponseEntity<Object>(ResponseUtils.noResultsFoundErrorJSON(), HttpStatus.NOT_FOUND);
+
+		URI uriToRedirect = new URI(urlEntity.getOriginalURL());
+		HttpHeaders headers = new HttpHeaders();
+		headers.setLocation(uriToRedirect);
+				
+		return new ResponseEntity<Object>(ResponseUtils.buildResponseBody(urlEntity, begining), headers, HttpStatus.SEE_OTHER);
 	}
 }

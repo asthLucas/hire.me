@@ -4,7 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,6 +20,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Transactional
 @SpringBootTest
@@ -130,7 +134,8 @@ public class ShortUrlApplicationTests {
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
 				.get("/find?URI=http://bemobi.com"))
 				.andReturn();
-
+		
+		
 		final JSONObject json = new JSONObject(result.getResponse().getContentAsString());
 		assertThrows(JSONException.class, () -> json.get("ERROR_CODE"));
 		assertNotNull(json.get("ALIAS"));
@@ -163,5 +168,36 @@ public class ShortUrlApplicationTests {
 		assertEquals("003", json.get("ERROR_CODE"));
 		assertEquals("No URL found for the given identifier.", json.get("DESCRIPTION"));
 	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testRetrieveURL_whenURLNotFound_thenShouldReturnErrorResponse() throws Exception
+	{
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+				.get("/find?URI=bemobi"))
+				.andReturn();
 
+		Map<String, Object> json = new ObjectMapper().readValue(result.getResponse().getContentAsString(), HashMap.class);
+		assertEquals("003", json.get("ERROR_CODE"));
+		assertEquals("No URL found for the given identifier.", json.get("DESCRIPTION"));
+	}
+
+	@Test
+	public void testRetrieveURL_whenURLRetrieved_thenShouldRedirect() throws Exception
+	{
+		mockMvc.perform(MockMvcRequestBuilders
+				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
+				.andReturn();
+
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+				.get("/find?URI=bemobi"))
+				.andReturn();
+		
+		String headerLocation = result.getResponse().getHeader("Location");
+		int responseStatus = result.getResponse().getStatus();
+
+		assertEquals("http://bemobi.com", headerLocation);
+		assertEquals(303, responseStatus);
+	}
+	
 }

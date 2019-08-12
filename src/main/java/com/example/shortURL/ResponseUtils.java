@@ -11,6 +11,7 @@ public class ResponseUtils {
 	{
 		Map<String, Object> json = new HashMap<String, Object>();
 		json.put("ALIAS", urlEntity.getAlias());
+		json.put("ORIGINAL_URL", urlEntity.getOriginalURL());
 		json.put("URL", "http://shortener/u/".concat(urlEntity.getAlias()));
 		json.put("TIMESTAMP", new Date());
 		
