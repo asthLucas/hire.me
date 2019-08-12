@@ -100,4 +100,20 @@ public class ShortUrlApplicationTests {
 		assertEquals("001", json.get("ERROR_CODE"));
 		assertEquals("Custom alias already in use for a different URL, please use a different one.", json.get("DESCRIPTION"));
 	}
+
+	@Test
+	public void testShortenURL_whenCustomAliasAlreadyExistsForURL_thenShouldReturnError() throws Exception
+	{
+		mockMvc.perform(MockMvcRequestBuilders
+				.get("/create?URL=http://bemobi.com"))
+				.andReturn();
+		
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
+				.andReturn();
+		
+		JSONObject json = new JSONObject(result.getResponse().getContentAsString());
+		assertEquals("002", json.get("ERROR_CODE"));
+		assertEquals("This URL has been mapped already.", json.get("DESCRIPTION"));
+	}
 }

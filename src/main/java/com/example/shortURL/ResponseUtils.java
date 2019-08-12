@@ -41,4 +41,15 @@ public class ResponseUtils {
 
 		return json;
 	}
+	
+	public static Map<String, Object> urlAlreadyMappedToAliasErrorJSON()
+	{
+		Map<String, Object> json = new HashMap<String, Object>();
+		json.put("ERROR_CODE", "002");
+		json.put("DESCRIPTION", "This URL has been mapped already.");
+		json.put("TIMESTAMP", new Date().toString());
+
+		return json;
+	}
+
 }

@@ -19,12 +19,23 @@ public class URLShortenerBean {
 	{
 		Long begining = System.nanoTime();
 		URLEntity urlEntity = urlEntityRepository.findByOriginalURLOrAlias(originalURL, alias);
-		urlEntity = validateAndPersistURL(urlEntity, originalURL, alias);
+
+		if(!validateAliasInUseByDifferentURL(urlEntity, alias))
+			return ResponseUtils.urlAlreadyMappedToAliasErrorJSON();
 		
+		urlEntity = validateAndPersistURL(urlEntity, originalURL, alias);
 		if(urlEntity == null)
 			return ResponseUtils.aliasAlreadyInUseErrorJSON();
 		
 		return ResponseUtils.buildResponseBody(urlEntity, begining);
+	}
+	
+	private boolean validateAliasInUseByDifferentURL(URLEntity urlEntity, String alias)
+	{
+		if(urlEntity == null)
+			return true;
+		
+		return urlEntity.getAlias().equals(alias);
 	}
 	
 	private URLEntity validateAndPersistURL(URLEntity urlEntity, String originalURL, String alias)
