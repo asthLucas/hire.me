@@ -18,7 +18,7 @@ public class URLShortenerBean {
 	public Map<String, Object> shorten(String originalURL, String alias) throws NoSuchAlgorithmException
 	{
 		Long begining = System.nanoTime();
-		URLEntity urlEntity = urlEntityRepository.findByAlias(alias);
+		URLEntity urlEntity = urlEntityRepository.findByOriginalURLOrAlias(originalURL, alias);
 		urlEntity = validateAndPersistURL(urlEntity, originalURL, alias);
 		
 		if(urlEntity == null)
@@ -26,20 +26,20 @@ public class URLShortenerBean {
 		
 		return ResponseUtils.buildResponseBody(urlEntity, begining);
 	}
-		
+	
 	private URLEntity validateAndPersistURL(URLEntity urlEntity, String originalURL, String alias)
 	{
 		if(urlEntity == null) {
 			urlEntity = new URLEntity(originalURL, alias);
 			urlEntityRepository.saveAndFlush(urlEntity);
+			return urlEntity;
 		} else if (isURLAliasAlreadyInUse(urlEntity, originalURL, alias)) {
 			return null;
 		} else {
 			urlEntity.incrementTimesRequested();
 			urlEntityRepository.saveAndFlush(urlEntity);
+			return urlEntity;
 		}
-		
-		return urlEntity;
 	}
 	
 	private boolean isURLAliasAlreadyInUse(URLEntity entity, String url, String alias)

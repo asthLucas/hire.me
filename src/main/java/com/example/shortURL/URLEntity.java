@@ -19,6 +19,8 @@ public class URLEntity {
 	private Long timesRequested;
 	private Date lastAccessTimestamp;
 
+	public URLEntity() {};
+	
 	public URLEntity(String url, String alias)
 	{		
 		if(alias == null || alias.isEmpty())

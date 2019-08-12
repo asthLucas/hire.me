@@ -46,7 +46,7 @@ public class ShortUrlApplicationTests {
 				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
 				.andReturn();
 		
-		URLEntity urlEntity = urlEntityRepository.findByOriginalURL("http://bemobi.com");
+		URLEntity urlEntity = urlEntityRepository.findByOriginalURLOrAlias("http://bemobi.com", null);
 		assertEquals("http://bemobi.com", urlEntity.getOriginalURL());
 		assertEquals("bemobi", urlEntity.getAlias());
 	}
