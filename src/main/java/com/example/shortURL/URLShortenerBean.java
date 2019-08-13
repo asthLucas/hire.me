@@ -1,12 +1,14 @@
 package com.example.shortURL;
 
+import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
-import org.bouncycastle.jcajce.provider.digest.SHA3;
-import org.bouncycastle.jcajce.provider.digest.SHA3.DigestSHA3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import net.jpountz.xxhash.XXHash64;
+import net.jpountz.xxhash.XXHashFactory;
 
 @Component("urlShortenerBean")
 public class URLShortenerBean {
@@ -63,19 +65,15 @@ public class URLShortenerBean {
 	
 	static String hashURL(String url)
 	{
-		DigestSHA3 SHA3 = new SHA3.Digest512();
-		byte[] digest = SHA3.digest(url.getBytes());
+		XXHash64 xx = XXHashFactory.fastestJavaInstance().hash64();
+		ByteBuffer buffer = ByteBuffer.wrap(url.getBytes());
+		Long hash = xx.hash(buffer, 0L);
 		
-		StringBuilder bytes = new StringBuilder();
-		
-		for (int i = 0; i < digest.length; i++) {
-			bytes.append(Math.abs(digest[i]));
-		}
-		
-		return Long.toHexString(Long.parseUnsignedLong((bytes.toString().substring(0, 14)))).substring(0, SHORT_URL_SIZE);
+		return Long.toHexString(Long.parseUnsignedLong((hash.toString().replace("-", "").substring(0, 14)))).substring(0, SHORT_URL_SIZE);
 	}
-	
+
 	public void setUrlEntityRepository(URLEntityRepository urlEntityRepository) {
 		this.urlEntityRepository = urlEntityRepository;
 	}
+	
 }

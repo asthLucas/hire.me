@@ -28,19 +28,19 @@ public class URLShortenerBeanUnitTest {
 	@Test
 	public void testShorten_whenGivenURLWithoutCustomAlias_thenReturnShortenedURL() throws NoSuchAlgorithmException
 	{
-		String expected = "http://shortener/u/1f7b69";
+		String expected = "http://shortener/u/4fe98b";
 		Map<String, Object> actual = urlShortenerBean.shorten("http://bemobi.com", null);
 		assertTrue(expected.equals(actual.get("URL")));
 		
-		expected = "http://shortener/u/10b301";
+		expected = "http://shortener/u/264472";
 		actual = urlShortenerBean.shorten("http://portal.ufrj.br", null);
 		assertTrue(expected.equals(actual.get("URL")));
 		
-		expected = "http://shortener/u/17c2cc";
+		expected = "http://shortener/u/1c5ec8";
 		actual = urlShortenerBean.shorten("http://google.com", null);
 		assertTrue(expected.equals(actual.get("URL")));
 		
-		expected = "http://shortener/u/1d34fc";
+		expected = "http://shortener/u/1ef084";
 		actual = urlShortenerBean.shorten("http://facebook.com", null);
 		assertTrue(expected.equals(actual.get("URL")));
 	}
