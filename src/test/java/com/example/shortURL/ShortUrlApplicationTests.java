@@ -203,4 +203,23 @@ public class ShortUrlApplicationTests {
 		assertEquals(303, responseStatus);
 	}
 	
+	@Test
+	public void testShortenURL_whenURLRequestedWithoutAliasTwice_thenShouldIncrementTimesRequested() throws Exception
+	{
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+				.get("/create?URL=http://bemobi.com"))
+				.andReturn();
+
+		JSONObject json = new JSONObject(result.getResponse().getContentAsString());
+		json = new JSONObject(json.get("STATISTICS").toString());
+		assertEquals(1, json.get("TIMES_REQUESTED"));
+		
+		result = mockMvc.perform(MockMvcRequestBuilders
+				.get("/create?URL=http://bemobi.com"))
+				.andReturn();
+
+		json = new JSONObject(result.getResponse().getContentAsString());
+		json = new JSONObject(json.get("STATISTICS").toString());
+		assertEquals(2, json.get("TIMES_REQUESTED"));
+	}
 }

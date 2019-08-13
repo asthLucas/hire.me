@@ -32,7 +32,7 @@ public class URLShortenerBean {
 	
 	private boolean validateAliasInUseByDifferentURL(URLEntity urlEntity, String alias)
 	{
-		if(urlEntity == null)
+		if(urlEntity == null || alias == null)
 			return true;
 		
 		return urlEntity.getAlias().equals(alias);
