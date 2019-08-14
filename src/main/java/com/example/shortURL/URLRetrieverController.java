@@ -19,4 +19,11 @@ public class URLRetrieverController {
 	{
 		return urlRetrieverBean.retrieve(uri);
 	}
+	
+	@GetMapping("top10")
+	public ResponseEntity<Object> retriveTop10RequestedURL()
+	{
+		return urlRetrieverBean.retrieveTop10();
+	}
+	
 }

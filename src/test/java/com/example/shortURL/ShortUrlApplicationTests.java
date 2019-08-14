@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
@@ -222,4 +223,52 @@ public class ShortUrlApplicationTests {
 		json = new JSONObject(json.get("STATISTICS").toString());
 		assertEquals(2, json.get("TIMES_REQUESTED"));
 	}
+	
+	@Test
+	public void testRetrieveTop10URL_whenOnlyOneURLRequestedOnce_thenShouldReturnURL() throws Exception
+	{
+		mockMvc.perform(MockMvcRequestBuilders
+				.get("/create?URL=http://bemobi.com"))
+				.andReturn();
+
+		
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+				.get("/top10"))
+				.andReturn();
+		
+		JSONObject json = new JSONObject(result.getResponse().getContentAsString());
+		JSONArray jsonArray = (JSONArray) json.get("URLS");
+		json = (JSONObject) jsonArray.get(0);
+		
+		assertEquals("4fe98b", json.get("ALIAS"));
+	}
+	
+	@Test
+	public void testRetrieveTop10URL_whenElevenURLsRequested_thenShouldReturnOnlyTopTenURL() throws Exception
+	{
+		mockMvc.perform(MockMvcRequestBuilders
+				.get("/create?URL=http://google.com"))
+				.andReturn();
+		
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 2; j++) {
+				mockMvc.perform(MockMvcRequestBuilders
+						.get("/create?URL=http://bemobi".concat(Integer.toString(i)).concat(".com&CUSTOM_ALIAS=").concat(Integer.toString(i))))
+						.andReturn();
+			}
+		}
+		
+		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
+				.get("/top10"))
+				.andReturn();
+
+		JSONObject json = new JSONObject(result.getResponse().getContentAsString());
+		JSONArray jsonArray = (JSONArray) json.get("URLS");
+		
+		for (int i = 0; i < jsonArray.length(); i++) {
+			int timesRequested = Integer.valueOf((Integer) (new JSONObject(jsonArray.getJSONObject(i).get("STATISTICS").toString()).get("TIMES_REQUESTED")));
+			assertEquals(2, timesRequested);
+		}
+	}
+	
 }

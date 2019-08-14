@@ -2,6 +2,7 @@ package com.example.shortURL;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -32,4 +33,12 @@ public class URLRetrieverBean {
 				
 		return new ResponseEntity<Object>(ResponseUtils.buildResponseBody(urlEntity, begining), headers, HttpStatus.SEE_OTHER);
 	}
+	
+	public ResponseEntity<Object> retrieveTop10()
+	{
+		List<URLEntity> urlEntities = urlEntityRepository.findTop10ByOrderByTimesRequestedDesc();
+				
+		return new ResponseEntity<Object>(ResponseUtils.buildResponseBody(urlEntities), HttpStatus.SEE_OTHER);
+	}
+
 }

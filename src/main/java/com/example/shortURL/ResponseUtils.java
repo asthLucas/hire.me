@@ -1,7 +1,9 @@
 package com.example.shortURL;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +23,33 @@ public class ResponseUtils {
 		json.put("STATISTICS", statistics);
 		
 		return json;
+	}
+	
+	public static Map<String, Object> buildResponseBody(List<URLEntity> entities)
+	{
+		Map<String, Object> jsonResponse = new HashMap<String, Object>();
+		
+		List<Map<String, Object>> jsonEntities = new ArrayList<>();
+		
+		for(URLEntity urlEntity : entities)
+		{
+			Map<String, Object> jsonUrlEntity = new HashMap<String, Object>();
+			
+			jsonUrlEntity.put("ALIAS", urlEntity.getAlias());
+			jsonUrlEntity.put("ORIGINAL_URL", urlEntity.getOriginalURL());
+			jsonUrlEntity.put("URL", "http://shortener/u/".concat(urlEntity.getAlias()));
+			jsonUrlEntity.put("TIMESTAMP", new Date());
+			
+			Map<String, Object> statistics = new HashMap<String, Object>();
+			statistics.put("TIMES_REQUESTED", urlEntity.getTimesRequested());
+			jsonUrlEntity.put("STATISTICS", statistics);
+			
+			jsonEntities.add(jsonUrlEntity);
+		}
+
+		jsonResponse.put("URLS", jsonEntities);
+		
+		return jsonResponse;
 	}
 	
 	public static Map<String, Object> noURLSpecifiedErrorJSON()
