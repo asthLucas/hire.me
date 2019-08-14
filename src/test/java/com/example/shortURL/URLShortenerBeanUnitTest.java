@@ -13,6 +13,9 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.Mockito;
 
+import com.example.shortURL.model.URLEntityRepository;
+import com.example.shortURL.shorten.URLShortenerBean;
+
 @TestInstance(Lifecycle.PER_CLASS)
 public class URLShortenerBeanUnitTest {
 	

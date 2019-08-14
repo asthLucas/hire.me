@@ -1,4 +1,4 @@
-package com.example.shortURL;
+package com.example.shortURL.retrieve;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -9,6 +9,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import com.example.shortURL.model.URLEntity;
+import com.example.shortURL.model.URLEntityRepository;
+import com.example.shortURL.utils.ResponseUtils;
 
 @Component("urlRetrieverBean")
 public class URLRetrieverBean {

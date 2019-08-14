@@ -1,4 +1,4 @@
-package com.example.shortURL;
+package com.example.shortURL.model;
 
 import java.util.List;
 

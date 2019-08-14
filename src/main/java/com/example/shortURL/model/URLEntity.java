@@ -1,4 +1,4 @@
-package com.example.shortURL;
+package com.example.shortURL.model;
 
 import java.util.Date;
 
@@ -6,6 +6,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+
+import com.example.shortURL.shorten.URLShortenerBean;
 
 @Entity
 public class URLEntity {

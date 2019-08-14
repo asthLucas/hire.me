@@ -1,4 +1,4 @@
-package com.example.shortURL;
+package com.example.shortURL.shorten;
 
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
@@ -6,6 +6,10 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.example.shortURL.model.URLEntity;
+import com.example.shortURL.model.URLEntityRepository;
+import com.example.shortURL.utils.ResponseUtils;
 
 import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;
@@ -63,7 +67,7 @@ public class URLShortenerBean {
 		return isAliasAlreadyInUse && !isInUseForSameURL;
 	}
 	
-	static String hashURL(String url)
+	public static String hashURL(String url)
 	{
 		XXHash64 xx = XXHashFactory.fastestJavaInstance().hash64();
 		ByteBuffer buffer = ByteBuffer.wrap(url.getBytes());
