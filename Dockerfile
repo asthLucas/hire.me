@@ -1,5 +1,5 @@
 FROM openjdk:12-jdk-alpine
-VOLUME /tmp
+
 ARG VERSION=0.0.1
 ARG JAR_FILE=/target/shortURL-${VERSION}-SNAPSHOT.jar
 COPY ${JAR_FILE} app.jar
