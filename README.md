@@ -1,3 +1,92 @@
+# ShortURL
+Um encurtador de URL simples.
+
+## Instruções
+
+### Construindo o artefato
+
+Antes de progredir certifique-se que a versão da **JDK** utilizada é a **12**, que é a versão usada pela imagem base do container que iremos utilizar. No diretório principal do projeto há um script que pode ser usado para construir e executar a aplicação. Para construir a imagem do projeto a partir do Dockerfile execute ```./run.sh build```, como o projeto é construído usando **Maven** podemos pular o plugin que executa os testes durante o processo de build, para tal execute ```./run.sh build skip-test```. 
+Após ter construído a imagem o container da aplicação pode ser iniciado executando ```./run.sh```. Caso seja feita alguma modificação no projeto a imagem precisará ser gerada novamente, antes disso a imagem antiga deve ser eliminada executando ```./run.sh clean```. Note que o container da aplicação deve ser parado antes de executar este comando.
+
+### Chamando a API
+
+O encurtador é separado em duas partes, encurtar e recuperar URLs já encurtadas. Para encurtar uma URL é preciso fazer um **POST** para o endpoint /create, no corpo da requisição deve constar a URL desejada e opcionalmente um alias. 
+Ex: 
+```
+POST localhost:8080/create
+
+{"url":"http://google.com", "alias":"abc"}
+```
+Caso um alias não seja escolhido este será definido e retornado pelo encurtador.
+Uma forma de executar as requisições é usando **curl**:
+`` curl-H "Content-Type: application/json" -d @body.json localhost:8080/create
+`` 
+
+Para recuperar uma URL que já foi encurtada o alias deve ser passado em um GET para
+```localhost:8080/u/1edfe3```, onde ```1edfe3``` é o suposto alias gerado anteriormente pelo encurtador. 
+
+```
+GET localhost:8080/u/1edfe3
+```
+
+Assim a aplicação irá recuperar a URL original e redirecionar o usuário para ela.
+
+
+As URLs mais requisitadas podem ser consultados fazendo um **GET** para ```/top10```, o contador de requisições só é incrementado por pedidos de encurtamento.
+
+```
+GET localhost:8080/top10
+```
+
+## Erros
+
+Existem três tipos diferentes de erros que API pode retornar em JSON, os três primeiros são referentes ao processo de encurtação e o último ocorre na recuperação da URL encurtada:
+
+```
+{
+    "ERROR_CODE" : "000",
+    "DESCRIPTION" : "No input was specified, please inform the URL you wish to shorten."
+}
+```
+```
+{
+    "ERROR_CODE" : "001",
+    "DESCRIPTION" : "Custom alias already in use for a different URL, please use a different one."
+}
+```
+```
+{
+    "ERROR_CODE" : "002",
+    "DESCRIPTION" : "This URL has been mapped already."
+}
+```
+```
+{
+    "ERROR_CODE" : "003",
+    "DESCRIPTION" : "No URL found for the given identifier."
+}
+```
+
+## Acessando o banco de dados
+
+Enquanto a aplicação estiver em execução é possível acessar o console do **H2** que é o banco de dados usado, para acessar vá para ```localhost:8080/h2-console``` e siga o exemplo abaixo:
+
+![](diagramas/h2-console.png)
+
+## Diagramas de sequência
+
+![](diagramas/encurtar_alias_valido.png)
+
+![](diagramas/encurtar_alias_invalido.png)
+
+![](diagramas/encurtar_alias_repetido.png)
+
+![](diagramas/recuperar_alias_valido.png)
+
+![](diagramas/recuperar_alias_invalido.png)
+
+![](diagramas/recupera_top10.png)
+
 # Hire.me
 Um pequeno projeto para testar suas habilidades como programador.
 
