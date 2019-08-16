@@ -1,4 +1,4 @@
-package com.example.shortURL;
+package com.example.shortURL.shorten;
 
 import static org.junit.Assert.assertEquals;
 
@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -23,6 +25,7 @@ import com.example.shortURL.model.URLEntityRepository;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith(SpringExtension.class)
+@TestPropertySource(locations = "classpath:test.properties")
 public class URLShortenerControllerIntegrationTest {
 
 	@Autowired
@@ -33,20 +36,32 @@ public class URLShortenerControllerIntegrationTest {
 
 	@Test
 	public void testShortenURL_whenEmptyRequestParameter_thenDefaultJSONisReceived() throws Exception {
-			MvcResult result =  mockMvc.perform(MockMvcRequestBuilders
-					.get("/create?URL="))
-					.andReturn();
-			
-			JSONObject json = new JSONObject(result.getResponse().getContentAsString());
-			assertEquals(json.get("ERROR_CODE"), "000");
-			assertEquals(json.get("DESCRIPTION"), "No input was specified, please inform the URL you wish to shorten.");
+		JSONObject body = new JSONObject();
+		body.put("url", "");
+		body.put("custom_alias", null);
+
+		MvcResult result =  mockMvc.perform(MockMvcRequestBuilders
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
+				.andReturn();
+		
+		JSONObject json = new JSONObject(result.getResponse().getContentAsString());
+		assertEquals(json.get("ERROR_CODE"), "000");
+		assertEquals(json.get("DESCRIPTION"), "No input was specified, please inform the URL you wish to shorten.");
 	}
 	
 	@Test
 	public void testShortenURL_whenDataStoreEmpty_thenCreatesURLEntity() throws Exception
 	{
+		JSONObject body = new JSONObject();
+		body.put("url", "http://bemobi.com");
+		body.put("custom_alias", "bemobi");
+
 		mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
 		
 		URLEntity urlEntity = urlEntityRepository.findByOriginalURLOrAlias("http://bemobi.com", null);
@@ -57,14 +72,22 @@ public class URLShortenerControllerIntegrationTest {
 	@Test
 	public void testShortenURL_whenMultipleShortenRequests_thenShouldCreateOnlyOneURLEntity() throws Exception
 	{
+		JSONObject body = new JSONObject();
+		body.put("url", "http://bemobi.com");
+		body.put("custom_alias", "bemobi");
+
 		mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
 
 		mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
-
+		
 		List<URLEntity> urlEntities = urlEntityRepository.findAll();
 		
 		assertEquals(1, urlEntities.size());
@@ -75,12 +98,19 @@ public class URLShortenerControllerIntegrationTest {
 	@Test
 	public void testShortenURL_whenMultipleShortenRequests_thenShouldIncrementTimesRequested() throws Exception
 	{
+		JSONObject body = new JSONObject();
+		body.put("url", "http://bemobi.com");
+
 		mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
-		
+
 		mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
 		
 		List<URLEntity> urlEntities = urlEntityRepository.findAll();
@@ -91,12 +121,22 @@ public class URLShortenerControllerIntegrationTest {
 	@Test
 	public void testShortenURL_whenCustomAliasAlreadyExistsForDifferentURL_thenShouldReturnError() throws Exception
 	{
+		JSONObject body = new JSONObject();
+		body.put("url", "http://bemobi1.com");
+		body.put("custom_alias", "bemobi");
+
 		mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi1.com&CUSTOM_ALIAS=bemobi"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
-		
+
+		body.put("url", "http://bemobi2.com");
+		body.put("custom_alias", "bemobi");
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi2.com&CUSTOM_ALIAS=bemobi"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
 		
 		JSONObject json = new JSONObject(result.getResponse().getContentAsString());
@@ -105,26 +145,40 @@ public class URLShortenerControllerIntegrationTest {
 	}
 
 	@Test
-	public void testShortenURL_whenCustomAliasAlreadyExistsForURL_thenShouldReturnError() throws Exception
+	public void testShortenURL_whenCustomAliasAlreadyExistsForURLAndNoNewCustomAliasRequested_thenShouldReturnCustomAlias() throws Exception
 	{
+		JSONObject body = new JSONObject();
+		body.put("url", "http://bemobi.com");
+		body.put("custom_alias", "bemobi");
+
 		mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
-		
+
+		body.put("url", "http://bemobi.com");
+		body.put("custom_alias", null);
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
-				.andReturn();
+							.post("/create")
+							.contentType(MediaType.APPLICATION_JSON_VALUE)
+							.content(body.toString()))
+							.andReturn();
 		
 		JSONObject json = new JSONObject(result.getResponse().getContentAsString());
-		assertEquals("002", json.get("ERROR_CODE"));
-		assertEquals("This URL has been mapped already.", json.get("DESCRIPTION"));
+		assertEquals("bemobi", json.get("ALIAS"));
 	}
 	
 	@Test
 	public void testShortenURL_whenURLRequestedWithoutAliasTwice_thenShouldIncrementTimesRequested() throws Exception
 	{
+		JSONObject body = new JSONObject();
+		body.put("url", "http://bemobi.com");
+
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
 
 		JSONObject json = new JSONObject(result.getResponse().getContentAsString());
@@ -132,9 +186,11 @@ public class URLShortenerControllerIntegrationTest {
 		assertEquals(1, json.get("TIMES_REQUESTED"));
 		
 		result = mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
-
+		
 		json = new JSONObject(result.getResponse().getContentAsString());
 		json = new JSONObject(json.get("STATISTICS").toString());
 		assertEquals(2, json.get("TIMES_REQUESTED"));

@@ -15,6 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -27,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ExtendWith(SpringExtension.class)
+@TestPropertySource(locations = "classpath:test.properties")
 public class URLRetrieverControllerIntegrationTest {
 
 	@Autowired
@@ -35,10 +38,16 @@ public class URLRetrieverControllerIntegrationTest {
 	@Test
 	public void testRetrieveURL_whenUsingPreviouslyShortenedURL_thenShouldReturnOriginalURL() throws Exception
 	{
-		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com"))
-				.andReturn();
+		JSONObject body = new JSONObject();
+		body.put("url", "http://bemobi.com");
+		body.put("custom_alias", null);
 
+		MvcResult result =  mockMvc.perform(MockMvcRequestBuilders
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
+				.andReturn();
+		
 		String alias = (String) new ObjectMapper().readValue(result.getResponse().getContentAsString(), HashMap.class).get("ALIAS");
 
 		result = mockMvc.perform(MockMvcRequestBuilders
@@ -54,8 +63,14 @@ public class URLRetrieverControllerIntegrationTest {
 	@Test
 	public void testRetrieveURL_whenUsingAlias_thenShouldReturnOriginalURL() throws Exception
 	{
+		JSONObject body = new JSONObject();
+		body.put("url", "http://bemobi.com");
+		body.put("custom_alias", "bemobi");
+
 		mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
 
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
@@ -96,10 +111,16 @@ public class URLRetrieverControllerIntegrationTest {
 	@Test
 	public void testRetrieveURL_whenURLRetrieved_thenShouldRedirect() throws Exception
 	{
-		mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com&CUSTOM_ALIAS=bemobi"))
-				.andReturn();
+		JSONObject body = new JSONObject();
+		body.put("url", "http://bemobi.com");
+		body.put("custom_alias", "bemobi");
 
+		mockMvc.perform(MockMvcRequestBuilders
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
+				.andReturn();
+		
 		MvcResult result = mockMvc.perform(MockMvcRequestBuilders
 				.get("/u/bemobi"))
 				.andReturn();
@@ -115,8 +136,13 @@ public class URLRetrieverControllerIntegrationTest {
 	@Test
 	public void testRetrieveTop10URL_whenOnlyOneURLRequestedOnce_thenShouldReturnURL() throws Exception
 	{
+		JSONObject body = new JSONObject();
+		body.put("url", "http://bemobi.com");
+
 		mockMvc.perform(MockMvcRequestBuilders
-				.get("/create?URL=http://bemobi.com"))
+				.post("/create")
+				.contentType(MediaType.APPLICATION_JSON_VALUE)
+				.content(body.toString()))
 				.andReturn();
 
 		
